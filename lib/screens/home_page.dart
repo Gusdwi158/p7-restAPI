@@ -5,6 +5,7 @@ import '../models/course.dart';
 import '../providers/course_provider.dart';
 import '../widgets/course_card.dart';
 import '../widgets/error_view.dart';
+import 'course_form_page.dart';
 
 const String studentName = 'I Kadek Agus Dwi Adnyana';
 const String studentId = '2415051076';
@@ -19,6 +20,13 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
 
+  void _openAddCourseForm() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (_) => const CourseFormPage()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CourseProvider>();
@@ -26,13 +34,19 @@ class _HomePageState extends State<HomePage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Course Explorer v2'),
+        title: const Text('Course Data Manager'),
         backgroundColor: const Color(0xFF1976D2),
         foregroundColor: Colors.white,
         centerTitle: false,
         actions: [
           IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: 'Tambah Course',
+            onPressed: _openAddCourseForm,
+          ),
+          IconButton(
             icon: const Icon(Icons.refresh),
+            tooltip: 'Refresh',
             onPressed: () {
               context.read<CourseProvider>().loadCourses();
             },
@@ -111,10 +125,21 @@ class _HomePageState extends State<HomePage> {
     }
 
     if (provider.courses.isEmpty && selectedIndex != 2) {
-      return const Center(
-        child: Text(
-          'Data course belum tersedia',
-          style: TextStyle(fontSize: 15, color: Colors.grey),
+      return Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Data course belum tersedia',
+              style: TextStyle(fontSize: 15, color: Colors.grey),
+            ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: _openAddCourseForm,
+              icon: const Icon(Icons.add),
+              label: const Text('Tambah Course'),
+            ),
+          ],
         ),
       );
     }
@@ -154,6 +179,25 @@ class _HomePageState extends State<HomePage> {
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1E293B),
                   ),
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 46,
+            child: FilledButton.tonalIcon(
+              onPressed: _openAddCourseForm,
+              icon: const Icon(Icons.add),
+              label: const Text(
+                'Tambah Course',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              style: FilledButton.styleFrom(
+                backgroundColor: const Color(0xFFECFDF5),
+                foregroundColor: const Color(0xFF047857),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
                 ),
               ),
             ),

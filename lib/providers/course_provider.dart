@@ -10,6 +10,7 @@ class CourseProvider extends ChangeNotifier {
 
   List<Course> courses = [];
   bool isLoading = false;
+  bool isSaving = false;
   String? error;
   final Set<String> favorites = {};
 
@@ -24,6 +25,21 @@ class CourseProvider extends ChangeNotifier {
       error = e.toString();
     } finally {
       isLoading = false;
+      notifyListeners();
+    }
+  }
+
+  Future<void> addCourse(Course course) async {
+    if (isSaving) return;
+
+    isSaving = true;
+    notifyListeners();
+
+    try {
+      await repository.createCourse(course);
+      await loadCourses();
+    } finally {
+      isSaving = false;
       notifyListeners();
     }
   }
