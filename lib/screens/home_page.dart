@@ -1,7 +1,4 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import '../models/course.dart';
@@ -10,9 +7,6 @@ import '../widgets/course_card.dart';
 
 const String studentName = 'I Kadek Agus Dwi Adnyana';
 const String studentId = '2415051076';
-
-// Endpoint latihan REST API
-const String apiUrl = 'https://course-api-pearl.vercel.app/courses';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -23,49 +17,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
-  List<Course> _apiCourses = [];
-  String _apiStatusText = 'Memuat data dari REST API...';
-  bool _isApiError = false;
-
-  @override
-  void initState() {
-    super.initState();
-    fetchCourses();
-  }
-
-  Future<List<Course>> fetchCourses() async {
-    try {
-      final response = await http.get(Uri.parse(apiUrl));
-      if (response.statusCode == 200) {
-        final List<dynamic> rawList =
-            jsonDecode(response.body) as List<dynamic>;
-        final courses = rawList
-            .map((e) => Course.fromJson(e as Map<String, dynamic>))
-            .toList();
-
-        debugPrint('Konversi List<Course> Berhasil: ${courses.length} courses');
-        if (mounted) {
-          setState(() {
-            _apiCourses = courses;
-            _isApiError = false;
-            _apiStatusText =
-                'Model Mapping (List<Course>): ${courses.length} courses dimuat';
-          });
-        }
-        return courses;
-      }
-      throw Exception('HTTP ${response.statusCode}');
-    } catch (e) {
-      debugPrint('HTTP GET Gagal: $e');
-      if (mounted) {
-        setState(() {
-          _isApiError = true;
-          _apiStatusText = 'REST API Error: $e';
-        });
-      }
-      rethrow;
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -83,7 +34,6 @@ class _HomePageState extends State<HomePage> {
             icon: const Icon(Icons.refresh),
             onPressed: () {
               context.read<CourseProvider>().loadCourses();
-              fetchCourses();
             },
           ),
         ],
@@ -190,9 +140,7 @@ class _HomePageState extends State<HomePage> {
     if (selectedIndex == 0) {
       return _buildHomeView(provider);
     } else if (selectedIndex == 1) {
-      return _buildCoursesView(
-        _apiCourses.isNotEmpty ? _apiCourses : provider.courses,
-      );
+      return _buildCoursesView(provider.courses);
     } else {
       return _buildFavoritesView(provider.favoriteCourses);
     }
@@ -201,9 +149,7 @@ class _HomePageState extends State<HomePage> {
   // I KADEK AGUS DWI ADNYANA
   // 2415051076
   Widget _buildHomeView(CourseProvider provider) {
-    final displayCourses = _apiCourses.isNotEmpty
-        ? _apiCourses
-        : provider.courses;
+    final courses = provider.courses;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
@@ -228,50 +174,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14.0,
-              vertical: 10.0,
-            ),
-            decoration: BoxDecoration(
-              color: _isApiError
-                  ? const Color(0xFFFEF2F2)
-                  : const Color(0xFFECFDF5),
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(
-                color: _isApiError
-                    ? const Color(0xFFFECACA)
-                    : const Color(0xFFA7F3D0),
-              ),
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  _isApiError
-                      ? Icons.error_outline
-                      : Icons.check_circle_outline,
-                  size: 18,
-                  color: _isApiError
-                      ? Colors.red.shade700
-                      : Colors.green.shade700,
-                ),
-                const SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    _apiStatusText,
-                    style: TextStyle(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: _isApiError
-                          ? Colors.red.shade800
-                          : Colors.green.shade800,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ),
           const SizedBox(height: 16),
@@ -300,7 +202,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '${displayCourses.length}',
+                          '${courses.length}',
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -352,7 +254,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 18),
           Column(
-            children: displayCourses.take(3).map((course) {
+            children: courses.take(3).map((course) {
               return CourseCard(course: course);
             }).toList(),
           ),
