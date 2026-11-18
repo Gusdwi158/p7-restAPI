@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/course.dart';
 import '../providers/course_provider.dart';
 import '../widgets/course_card.dart';
+import '../widgets/error_view.dart';
 
 const String studentName = 'I Kadek Agus Dwi Adnyana';
 const String studentId = '2415051076';
@@ -102,37 +103,18 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildBodyContent(CourseProvider provider) {
     if (provider.isLoading) {
-      return const Center(
-        child: Padding(
-          padding: EdgeInsets.all(32.0),
-          child: CircularProgressIndicator(),
-        ),
-      );
+      return const Center(child: CircularProgressIndicator());
     }
 
     if (provider.error != null) {
-      return Center(
-        child: Padding(
-          padding: EdgeInsets.all(24.0),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Icon(Icons.error_outline, color: Colors.red, size: 48),
-              const SizedBox(height: 12),
-              Text(
-                'Terjadi galat: ${provider.error}',
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: 14),
-              ElevatedButton.icon(
-                onPressed: () {
-                  context.read<CourseProvider>().loadCourses();
-                },
-                icon: const Icon(Icons.refresh),
-                label: const Text('Coba Lagi'),
-              ),
-            ],
-          ),
+      return ErrorView(message: provider.error!, onRetry: provider.loadCourses);
+    }
+
+    if (provider.courses.isEmpty && selectedIndex != 2) {
+      return const Center(
+        child: Text(
+          'Data course belum tersedia',
+          style: TextStyle(fontSize: 15, color: Colors.grey),
         ),
       );
     }
@@ -265,7 +247,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _buildCoursesView(List<Course> courses) {
     if (courses.isEmpty) {
-      return const Center(child: Text('Katalog kursus kosong.'));
+      return const Center(child: Text('Data course belum tersedia'));
     }
 
     return ListView.builder(
