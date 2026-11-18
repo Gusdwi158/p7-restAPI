@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../models/course.dart';
 import '../providers/course_provider.dart';
 import '../screens/course_detail_page.dart';
+import '../screens/course_form_page.dart';
 
 class CourseCard extends StatelessWidget {
   final Course course;
@@ -38,7 +39,7 @@ class CourseCard extends StatelessWidget {
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 4.0),
           child: Text(
-            course.status,
+            '${course.code} • ${course.credits} SKS • ${course.status}',
             style: const TextStyle(
               color: Color(0xFF0D9488),
               fontWeight: FontWeight.bold,
@@ -46,19 +47,36 @@ class CourseCard extends StatelessWidget {
             ),
           ),
         ),
-        trailing: Consumer<CourseProvider>(
-          builder: (context, provider, child) {
-            final bool isFav = provider.isFavorite(course.code);
-            return IconButton(
-              icon: Icon(
-                isFav ? Icons.favorite : Icons.favorite_border,
-                color: isFav ? Colors.red : Colors.grey,
-              ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.edit_outlined, color: Color(0xFF475569)),
+              tooltip: 'Edit Course',
               onPressed: () {
-                context.read<CourseProvider>().toggleFavorite(course.code);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => CourseFormPage(initialCourse: course),
+                  ),
+                );
               },
-            );
-          },
+            ),
+            Consumer<CourseProvider>(
+              builder: (context, provider, child) {
+                final bool isFav = provider.isFavorite(course.code);
+                return IconButton(
+                  icon: Icon(
+                    isFav ? Icons.favorite : Icons.favorite_border,
+                    color: isFav ? Colors.red : Colors.grey,
+                  ),
+                  onPressed: () {
+                    context.read<CourseProvider>().toggleFavorite(course.code);
+                  },
+                );
+              },
+            ),
+          ],
         ),
       ),
     );

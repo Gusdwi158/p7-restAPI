@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../models/course.dart';
 import '../providers/course_provider.dart';
+import 'course_form_page.dart';
 
 class CourseDetailPage extends StatelessWidget {
   final Course course;
@@ -11,12 +12,32 @@ class CourseDetailPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isFav = context.watch<CourseProvider>().isFavorite(course.code);
+    final provider = context.watch<CourseProvider>();
+    // Ambil versi terbaru dari provider jika sudah diperbarui
+    final currentCourse = provider.courses.firstWhere(
+      (c) => c.id != null && c.id == course.id,
+      orElse: () => course,
+    );
+    final isFav = provider.isFavorite(currentCourse.code);
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(course.title),
+        title: Text(currentCourse.title),
         backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: 'Edit Course',
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (_) => CourseFormPage(initialCourse: currentCourse),
+                ),
+              );
+            },
+          ),
+        ],
       ),
       body: SafeArea(
         child: Padding(
@@ -35,7 +56,7 @@ class CourseDetailPage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        course.title,
+                        currentCourse.title,
                         style: const TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.bold,
@@ -43,17 +64,17 @@ class CourseDetailPage extends StatelessWidget {
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Kode: ${course.code}',
+                        'Kode: ${currentCourse.code}',
                         style: const TextStyle(fontSize: 14),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Bobot: ${course.credits} SKS',
+                        'Bobot: ${currentCourse.credits} SKS',
                         style: const TextStyle(fontSize: 14),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Status: ${course.status}',
+                        'Status: ${currentCourse.status}',
                         style: const TextStyle(fontSize: 14),
                       ),
                     ],
@@ -70,10 +91,29 @@ class CourseDetailPage extends StatelessWidget {
                   padding: const EdgeInsets.symmetric(vertical: 14),
                 ),
                 onPressed: () {
-                  context.read<CourseProvider>().toggleFavorite(course.code);
+                  context.read<CourseProvider>().toggleFavorite(
+                    currentCourse.code,
+                  );
                 },
                 icon: Icon(isFav ? Icons.favorite : Icons.favorite_border),
                 label: Text(isFav ? 'Hapus dari Favorit' : 'Tambah ke Favorit'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) =>
+                          CourseFormPage(initialCourse: currentCourse),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.edit_outlined),
+                label: const Text('Edit Course'),
               ),
             ],
           ),
