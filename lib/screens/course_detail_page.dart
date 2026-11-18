@@ -10,10 +10,61 @@ class CourseDetailPage extends StatelessWidget {
 
   const CourseDetailPage({super.key, required this.course});
 
+  Future<void> _confirmAndDelete(
+    BuildContext context,
+    Course currentCourse,
+  ) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: const Text('Hapus Course'),
+          content: Text(
+            'Apakah Anda yakin ingin menghapus "${currentCourse.title}" (${currentCourse.code})?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('Batal'),
+            ),
+            FilledButton(
+              style: FilledButton.styleFrom(backgroundColor: Colors.red),
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('Hapus'),
+            ),
+          ],
+        );
+      },
+    );
+
+    if (confirmed != true || !context.mounted) return;
+
+    try {
+      await context.read<CourseProvider>().removeCourse(currentCourse);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Course "${currentCourse.title}" berhasil dihapus'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.pop(context);
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Gagal menghapus course: ${e.toString().replaceFirst('Exception: ', '')}',
+          ),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<CourseProvider>();
-    // Ambil versi terbaru dari provider jika sudah diperbarui
     final currentCourse = provider.courses.firstWhere(
       (c) => c.id != null && c.id == course.id,
       orElse: () => course,
@@ -36,6 +87,11 @@ class CourseDetailPage extends StatelessWidget {
                 ),
               );
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline, color: Colors.red),
+            tooltip: 'Hapus Course',
+            onPressed: () => _confirmAndDelete(context, currentCourse),
           ),
         ],
       ),
@@ -114,6 +170,17 @@ class CourseDetailPage extends StatelessWidget {
                 },
                 icon: const Icon(Icons.edit_outlined),
                 label: const Text('Edit Course'),
+              ),
+              const SizedBox(height: 12),
+              OutlinedButton.icon(
+                style: OutlinedButton.styleFrom(
+                  foregroundColor: Colors.red,
+                  side: const BorderSide(color: Colors.red),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                ),
+                onPressed: () => _confirmAndDelete(context, currentCourse),
+                icon: const Icon(Icons.delete_outline),
+                label: const Text('Hapus Course'),
               ),
             ],
           ),

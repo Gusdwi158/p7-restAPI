@@ -59,4 +59,19 @@ class CourseApiService {
       throw Exception(errorMsg);
     }
   }
+
+  Future<void> deleteCourse(int id) async {
+    final response = await http.delete(Uri.parse('$baseUrl/courses/$id'));
+
+    if (response.statusCode < 200 || response.statusCode >= 300) {
+      String errorMsg = 'Gagal menghapus course (HTTP ${response.statusCode})';
+      try {
+        final decoded = jsonDecode(response.body);
+        if (decoded is Map && decoded['error'] != null) {
+          errorMsg = decoded['error'].toString();
+        }
+      } catch (_) {}
+      throw Exception(errorMsg);
+    }
+  }
 }
