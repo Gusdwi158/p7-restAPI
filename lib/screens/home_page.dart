@@ -1,4 +1,5 @@
 import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
@@ -10,7 +11,7 @@ import '../widgets/course_card.dart';
 const String studentName = 'I Kadek Agus Dwi Adnyana';
 const String studentId = '2415051076';
 
-// Endpoint latihan REST API (Tahap 2)
+// Endpoint latihan REST API
 const String apiUrl = 'https://course-api-pearl.vercel.app/courses';
 
 class HomePage extends StatefulWidget {
@@ -22,6 +23,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
+  List<Course> _apiCourses = [];
   String _apiStatusText = 'Memuat data dari REST API...';
   bool _isApiError = false;
 
@@ -31,19 +33,26 @@ class _HomePageState extends State<HomePage> {
     fetchCourses();
   }
 
-  Future<List<dynamic>> fetchCourses() async {
+  Future<List<Course>> fetchCourses() async {
     try {
       final response = await http.get(Uri.parse(apiUrl));
       if (response.statusCode == 200) {
-        final data = jsonDecode(response.body) as List<dynamic>;
-        debugPrint('HTTP GET Berhasil: ${data.length} courses ditemukan');
+        final List<dynamic> rawList =
+            jsonDecode(response.body) as List<dynamic>;
+        final courses = rawList
+            .map((e) => Course.fromJson(e as Map<String, dynamic>))
+            .toList();
+
+        debugPrint('Konversi List<Course> Berhasil: ${courses.length} courses');
         if (mounted) {
           setState(() {
+            _apiCourses = courses;
             _isApiError = false;
-            _apiStatusText = 'REST API GET (200 OK): ${data.length} courses ditemukan';
+            _apiStatusText =
+                'Model Mapping (List<Course>): ${courses.length} courses dimuat';
           });
         }
-        return data;
+        return courses;
       }
       throw Exception('HTTP ${response.statusCode}');
     } catch (e) {
@@ -181,7 +190,9 @@ class _HomePageState extends State<HomePage> {
     if (selectedIndex == 0) {
       return _buildHomeView(provider);
     } else if (selectedIndex == 1) {
-      return _buildCoursesView(provider.courses);
+      return _buildCoursesView(
+        _apiCourses.isNotEmpty ? _apiCourses : provider.courses,
+      );
     } else {
       return _buildFavoritesView(provider.favoriteCourses);
     }
@@ -190,7 +201,9 @@ class _HomePageState extends State<HomePage> {
   // I KADEK AGUS DWI ADNYANA
   // 2415051076
   Widget _buildHomeView(CourseProvider provider) {
-    final courses = provider.courses;
+    final displayCourses = _apiCourses.isNotEmpty
+        ? _apiCourses
+        : provider.courses;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20.0),
@@ -218,22 +231,32 @@ class _HomePageState extends State<HomePage> {
             ),
           ),
           const SizedBox(height: 12),
-          // Status hasil HTTP GET sementara (Tahap 2)
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+            padding: const EdgeInsets.symmetric(
+              horizontal: 14.0,
+              vertical: 10.0,
+            ),
             decoration: BoxDecoration(
-              color: _isApiError ? const Color(0xFFFEF2F2) : const Color(0xFFECFDF5),
+              color: _isApiError
+                  ? const Color(0xFFFEF2F2)
+                  : const Color(0xFFECFDF5),
               borderRadius: BorderRadius.circular(10),
               border: Border.all(
-                color: _isApiError ? const Color(0xFFFECACA) : const Color(0xFFA7F3D0),
+                color: _isApiError
+                    ? const Color(0xFFFECACA)
+                    : const Color(0xFFA7F3D0),
               ),
             ),
             child: Row(
               children: [
                 Icon(
-                  _isApiError ? Icons.error_outline : Icons.cloud_done_outlined,
+                  _isApiError
+                      ? Icons.error_outline
+                      : Icons.check_circle_outline,
                   size: 18,
-                  color: _isApiError ? Colors.red.shade700 : Colors.green.shade700,
+                  color: _isApiError
+                      ? Colors.red.shade700
+                      : Colors.green.shade700,
                 ),
                 const SizedBox(width: 8),
                 Expanded(
@@ -242,7 +265,9 @@ class _HomePageState extends State<HomePage> {
                     style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: _isApiError ? Colors.red.shade800 : Colors.green.shade800,
+                      color: _isApiError
+                          ? Colors.red.shade800
+                          : Colors.green.shade800,
                     ),
                   ),
                 ),
@@ -275,7 +300,7 @@ class _HomePageState extends State<HomePage> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '${courses.length}',
+                          '${displayCourses.length}',
                           style: const TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
@@ -327,7 +352,7 @@ class _HomePageState extends State<HomePage> {
           ),
           const SizedBox(height: 18),
           Column(
-            children: courses.take(3).map((course) {
+            children: displayCourses.take(3).map((course) {
               return CourseCard(course: course);
             }).toList(),
           ),
