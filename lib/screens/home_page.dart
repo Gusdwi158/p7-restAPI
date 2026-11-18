@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 
 import '../models/course.dart';
@@ -7,6 +9,9 @@ import '../widgets/course_card.dart';
 
 const String studentName = 'I Kadek Agus Dwi Adnyana';
 const String studentId = '2415051076';
+
+// Endpoint latihan REST API (Tahap 2)
+const String apiUrl = 'https://course-api-pearl.vercel.app/courses';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -17,6 +22,41 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   int selectedIndex = 0;
+  String _apiStatusText = 'Memuat data dari REST API...';
+  bool _isApiError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    fetchCourses();
+  }
+
+  Future<List<dynamic>> fetchCourses() async {
+    try {
+      final response = await http.get(Uri.parse(apiUrl));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as List<dynamic>;
+        debugPrint('HTTP GET Berhasil: ${data.length} courses ditemukan');
+        if (mounted) {
+          setState(() {
+            _isApiError = false;
+            _apiStatusText = 'REST API GET (200 OK): ${data.length} courses ditemukan';
+          });
+        }
+        return data;
+      }
+      throw Exception('HTTP ${response.statusCode}');
+    } catch (e) {
+      debugPrint('HTTP GET Gagal: $e');
+      if (mounted) {
+        setState(() {
+          _isApiError = true;
+          _apiStatusText = 'REST API Error: $e';
+        });
+      }
+      rethrow;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +74,7 @@ class _HomePageState extends State<HomePage> {
             icon: const Icon(Icons.refresh),
             onPressed: () {
               context.read<CourseProvider>().loadCourses();
+              fetchCourses();
             },
           ),
         ],
@@ -146,7 +187,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  //I KADEK AGUS DWI ADNYANA
+  // I KADEK AGUS DWI ADNYANA
   // 2415051076
   Widget _buildHomeView(CourseProvider provider) {
     final courses = provider.courses;
@@ -174,6 +215,38 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Status hasil HTTP GET sementara (Tahap 2)
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14.0, vertical: 10.0),
+            decoration: BoxDecoration(
+              color: _isApiError ? const Color(0xFFFEF2F2) : const Color(0xFFECFDF5),
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(
+                color: _isApiError ? const Color(0xFFFECACA) : const Color(0xFFA7F3D0),
+              ),
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  _isApiError ? Icons.error_outline : Icons.cloud_done_outlined,
+                  size: 18,
+                  color: _isApiError ? Colors.red.shade700 : Colors.green.shade700,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    _apiStatusText,
+                    style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: _isApiError ? Colors.red.shade800 : Colors.green.shade800,
+                    ),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 16),
