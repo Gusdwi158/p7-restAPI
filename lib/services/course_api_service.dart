@@ -3,12 +3,14 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 import '../models/course.dart';
+import 'course_data_source.dart';
 
-class CourseApiService {
+class CourseApiService implements CourseDataSource {
   CourseApiService(this.baseUrl);
 
   final String baseUrl;
 
+  @override
   Future<List<Course>> getCourses() async {
     final response = await http.get(Uri.parse('$baseUrl/courses'));
     if (response.statusCode != 200) {
@@ -19,6 +21,7 @@ class CourseApiService {
     return data.map((e) => Course.fromJson(e as Map<String, dynamic>)).toList();
   }
 
+  @override
   Future<Course> createCourse(Course course) async {
     final response = await http.post(
       Uri.parse('$baseUrl/courses'),
@@ -40,6 +43,7 @@ class CourseApiService {
     throw Exception(errorMsg);
   }
 
+  @override
   Future<void> updateCourse(int id, Course course) async {
     final response = await http.put(
       Uri.parse('$baseUrl/courses/$id'),
@@ -60,6 +64,7 @@ class CourseApiService {
     }
   }
 
+  @override
   Future<void> deleteCourse(int id) async {
     final response = await http.delete(Uri.parse('$baseUrl/courses/$id'));
 
