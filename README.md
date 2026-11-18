@@ -1,19 +1,31 @@
-# Course Explorer v2 - State Management & Architecture
+# Course Data Manager (Course Explorer v2)
 
-Praktikum Pertemuan 6 Pemrograman Mobile: Penerapan Provider dan Pemisahan Tanggung Jawab Arsitektur (Separation of Concerns).
+Aplikasi mobile Flutter untuk manajemen data mata kuliah (*Course*) dengan integrasi REST API dan Backend Database Supabase.
 
 ## Identitas Mahasiswa
-- **Nama:** I Kadek Agus Dwi Adnyana
-- **NIM:** 2415051076
-- **Kelas:** PTI 5 A
+- **Nama:** I Kadek Agus Dwi Adnyana[cite: 2]
+- **NIM:** 2415051076[cite: 2]
+- **Kelas:** PTI 5 A[cite: 2]
 
-## Alur Dependensi (Dependency Direction)
-Presentation (Screens & Widgets) -> Provider -> Repository -> Service/Data Source
+---
 
-## Tanggung Jawab Struktur Folder
-- `lib/models/`: Berisi representasi entitas data (`Course`) dan fungsi serialisasi/deserialisasi JSON (`fromJson`).
-- `lib/services/`: Mengelola komunikasi langsung dengan sumber data (membaca aset JSON lokal via `rootBundle` atau protokol API).
-- `lib/repositories/`: Menyediakan lapisan abstraksi data antara `CourseProvider` dan sumber data teknis.
-- `lib/providers/`: Mengelola *shared state*, siklus status asynchronous (*loading*, *error*, *data*), dan memancarkan notifikasi perubahan via `notifyListeners()`.
-- `lib/screens/`: Mengatur tata letak tampilan halaman aplikasi secara utuh dan responsif (`HomePage`, `CourseDetailPage`, `FavoritesPage`).
-- `lib/widgets/`: Menyediakan komponen antarmuka modular yang dapat digunakan kembali (`CourseCard`).
+## Dokumentasi REST Endpoint & Struktur JSON (Tahap 1)
+
+### 1. Informasi Endpoint Latihan
+- **Base URL (`apiBaseUrl`):** `https://course-api-pearl.vercel.app`[cite: 6]
+- **Endpoint GET:** `https://course-api-pearl.vercel.app/courses`[cite: 6]
+- **HTTP Method:** `GET`[cite: 6]
+- **Status Code:** `200 OK`
+- **Resource:** `courses`[cite: 6]
+
+### 2. Contoh Response Body (JSON)
+```json
+[
+  {
+    "id": 1,
+    "code": "MOB01",
+    "title": "Git & GitHub",
+    "credits": 2,
+    "status": "active"
+  }
+]
