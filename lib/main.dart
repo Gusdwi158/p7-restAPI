@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'config/supabase_config.dart';
 import 'services/course_data_source.dart';
 import 'services/course_api_service.dart';
 import 'repositories/course_repository.dart';
@@ -10,7 +12,15 @@ import 'screens/home_page.dart';
 // Mahasiswa: I Kadek Agus Dwi Adnyana (NIM: 2415051076)
 const String apiBaseUrl = 'https://course-api-pearl.vercel.app';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await Supabase.initialize(
+    url: SupabaseConfig.supabaseUrl,
+    anonKey: SupabaseConfig.supabaseAnonKey,
+  );
+
+  // Sumber data aktif sementara masih REST API hingga CourseSupabaseService siap di Tahap 12
   final CourseDataSource dataSource = CourseApiService(apiBaseUrl);
   final repository = CourseRepository(dataSource);
 
