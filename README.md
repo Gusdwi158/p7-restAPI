@@ -3,9 +3,9 @@
 Aplikasi mobile Flutter untuk manajemen data mata kuliah (*Course*) dengan integrasi REST API dan Backend Database Supabase.
 
 ## Identitas Mahasiswa
-- **Nama:** I Kadek Agus Dwi Adnyana[cite: 2]
-- **NIM:** 2415051076[cite: 2]
-- **Kelas:** PTI 5 A[cite: 2]
+- **Nama:** I Kadek Agus Dwi Adnyana
+- **NIM:** 2415051076
+- **Kelas:** PTI 5 A
 
 ---
 
