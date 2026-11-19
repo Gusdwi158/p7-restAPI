@@ -4,6 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/supabase_config.dart';
 import 'services/course_data_source.dart';
+import 'services/course_api_service.dart';
 import 'services/course_supabase_service.dart';
 import 'repositories/course_repository.dart';
 import 'providers/course_provider.dart';
@@ -11,6 +12,7 @@ import 'screens/home_page.dart';
 
 // Mahasiswa: I Kadek Agus Dwi Adnyana (NIM: 2415051076)
 const String apiBaseUrl = 'https://course-api-pearl.vercel.app';
+const bool useSupabase = true; // Ubah ke false untuk beralih ke REST API
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,8 +22,11 @@ Future<void> main() async {
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
 
-  // Sumber data aktif: Supabase (untuk REST API kembali: CourseApiService(apiBaseUrl))
-  final CourseDataSource dataSource = CourseSupabaseService();
+  // Switching sumber data cukup pada 1 baris ini tanpa mengubah Repository/Provider/UI:
+  final CourseDataSource dataSource = useSupabase
+      ? CourseSupabaseService()
+      : CourseApiService(apiBaseUrl);
+
   final repository = CourseRepository(dataSource);
 
   runApp(
