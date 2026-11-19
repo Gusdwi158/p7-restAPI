@@ -4,7 +4,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'config/supabase_config.dart';
 import 'services/course_data_source.dart';
-import 'services/course_api_service.dart';
+import 'services/course_supabase_service.dart';
 import 'repositories/course_repository.dart';
 import 'providers/course_provider.dart';
 import 'screens/home_page.dart';
@@ -20,8 +20,8 @@ Future<void> main() async {
     anonKey: SupabaseConfig.supabaseAnonKey,
   );
 
-  // Sumber data aktif sementara masih REST API hingga CourseSupabaseService siap di Tahap 12
-  final CourseDataSource dataSource = CourseApiService(apiBaseUrl);
+  // Sumber data aktif: Supabase (untuk REST API kembali: CourseApiService(apiBaseUrl))
+  final CourseDataSource dataSource = CourseSupabaseService();
   final repository = CourseRepository(dataSource);
 
   runApp(
